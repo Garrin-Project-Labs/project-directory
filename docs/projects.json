@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T19:13:31+00:00",
+  "generatedAt": "2026-06-24T20:03:16+00:00",
   "source": "Project Factory policy.yaml files",
   "privacy": "Only public projects with public GitHub Pages demos are listed.",
   "projects": [
@@ -65,6 +65,24 @@
       "tags": [],
       "sortOrder": 1000,
       "sortKey": "biohazardous dodge the meteors"
+    },
+    {
+      "id": "bullet-hell-game",
+      "title": "Bullet Hell Game",
+      "description": "Arcade bullet-hell MVP with leaderboard experiments.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-bullet-hell-game",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-bullet-hell-game/",
+      "channelId": "1516540611136589864",
+      "visibility": "public",
+      "pagesStatus": "live",
+      "status": "live",
+      "thumbnail": "",
+      "tags": [
+        "game",
+        "bullet-hell"
+      ],
+      "sortOrder": 1000,
+      "sortKey": "bullet hell game"
     },
     {
       "id": "for-the-queen",
