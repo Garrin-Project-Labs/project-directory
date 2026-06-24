@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T21:36:24+00:00",
+  "generatedAt": "2026-06-24T22:33:34+00:00",
   "source": "Project Factory policy.yaml files",
   "privacy": "Only public projects with public GitHub Pages demos are listed.",
   "projects": [
@@ -13,6 +13,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:57:48Z",
       "thumbnail": "docs/assets/thumbnails/directory.png",
       "tags": [
         "directory",
@@ -31,6 +32,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:40Z",
       "thumbnail": "docs/assets/thumbnails/space-2d-mmo.png",
       "tags": [
         "game",
@@ -50,6 +52,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:36Z",
       "thumbnail": "docs/assets/thumbnails/poly-art-assets.png",
       "tags": [
         "assets",
@@ -69,6 +72,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:42Z",
       "thumbnail": "docs/assets/thumbnails/tutorial-biohazardous.png",
       "tags": [
         "game",
@@ -87,6 +91,7 @@
       "visibility": "public",
       "pagesStatus": "live",
       "status": "live",
+      "updatedAt": "2026-06-20T02:49:46Z",
       "thumbnail": "docs/assets/thumbnails/bullet-hell-game.png",
       "tags": [
         "game",
@@ -105,6 +110,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:31Z",
       "thumbnail": "docs/assets/thumbnails/for-the-queen.png",
       "tags": [
         "game",
@@ -123,6 +129,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:33Z",
       "thumbnail": "docs/assets/thumbnails/idle-rpg-phaser.png",
       "tags": [
         "game",
@@ -142,6 +149,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:44Z",
       "thumbnail": "docs/assets/thumbnails/tutorial-nubsterz.png",
       "tags": [
         "game",
@@ -160,6 +168,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
+      "updatedAt": "2026-06-24T21:36:38Z",
       "thumbnail": "docs/assets/thumbnails/side-scroller-game.png",
       "tags": [
         "game",

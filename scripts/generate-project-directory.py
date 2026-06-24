@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -134,6 +135,25 @@ def load_directory_override(workspace_path: Path, project_id: str) -> dict[str, 
     return directory
 
 
+def project_updated_at(workspace_path: Path) -> str:
+    """Return the latest public repo commit timestamp for a workspace."""
+    for ref in ("origin/main", "HEAD"):
+        try:
+            result = subprocess.run(
+                ["git", "-C", str(workspace_path), "log", "-1", "--format=%cI", ref],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        updated_at = clean_text(result.stdout.splitlines()[0] if result.stdout.splitlines() else "")
+        if result.returncode == 0 and updated_at:
+            return updated_at
+    return ""
+
+
 def unchanged_generated_at(output: Path, payload: dict[str, Any]) -> str | None:
     if not output.exists():
         return None
@@ -211,6 +231,7 @@ def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
             "visibility": visibility,
             "pagesStatus": clean_text(publishing.get("githubPagesStatus"), "live" if override_pages_opt_in else "unknown"),
             "status": status,
+            "updatedAt": project_updated_at(policy_path.parents[1]),
             "thumbnail": thumbnail,
             "tags": tags,
             "sortOrder": sort_order,
