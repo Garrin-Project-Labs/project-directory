@@ -114,6 +114,15 @@ def validate_thumbnail(thumbnail: str, project_id: str) -> str:
     return thumbnail
 
 
+def validate_public_url(url: str, project_id: str, field: str) -> str:
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise ValueError(f"directory {field} for {project_id} must be an https URL")
+    return url
+
+
 def load_directory_override(workspace_path: Path, project_id: str) -> dict[str, Any]:
     override_path = workspace_path / ".project" / "directory.yaml"
     if not override_path.exists():
@@ -141,7 +150,6 @@ def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
         visibility = clean_text(discord.get("visibility") or "private").lower()
         pages_enabled = publishing.get("githubPages") is True
         public_demo = publishing.get("publicDemos") is True
-        pages_url = clean_text(publishing.get("githubPagesUrl"))
 
         try:
             override = load_directory_override(policy_path.parents[1], project_id)
@@ -149,12 +157,19 @@ def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
             print(f"warning: skipped {policy_path.parents[1]} directory override: {exc}")
             continue
 
+        pages_url = validate_public_url(
+            clean_text(override.get("pagesUrl"), clean_text(publishing.get("githubPagesUrl"))),
+            project_id,
+            "pagesUrl",
+        )
+        override_pages_opt_in = bool(override.get("listed") is True and pages_url)
+
         if override.get("listed") is False:
             continue
         if visibility != "public":
             continue
-        if project_id != "directory" and not (pages_enabled and public_demo and pages_url):
-            # Be conservative: public-but-not-published projects can opt in later.
+        if project_id != "directory" and not ((pages_enabled and public_demo and pages_url) or override_pages_opt_in):
+            # Be conservative: require policy publishing fields or an explicit directory opt-in with a Pages URL.
             continue
 
         title = clean_text(override.get("title"), name)
@@ -180,7 +195,7 @@ def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
             "pagesUrl": pages_url,
             "channelId": clean_text(discord.get("channelId")),
             "visibility": visibility,
-            "pagesStatus": clean_text(publishing.get("githubPagesStatus"), "unknown"),
+            "pagesStatus": clean_text(publishing.get("githubPagesStatus"), "live" if override_pages_opt_in else "unknown"),
             "status": status,
             "thumbnail": thumbnail,
             "tags": tags,
