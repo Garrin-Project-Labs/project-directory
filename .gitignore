@@ -1,0 +1,24 @@
+# Secrets and local/runtime state
+.env
+.env.*
+*.pem
+*.key
+*.token
+secrets/
+memory/
+sessions/
+*.sqlite
+*.sqlite3
+*.db
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

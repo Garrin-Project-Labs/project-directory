@@ -1,0 +1,64 @@
+project:
+  id: "directory"
+  name: "Project Directory"
+  repo: "Garrin-Project-Labs/project-directory"
+  sourceOfTruth: discord
+
+owner:
+  discordUserId: "222914128463921152"
+  label: "ClickG"
+
+discord:
+  guildId: "1515020347425030245"
+  channelId: "1519415648382353569"
+  visibility: "public"
+  projectsCategoryId: "1516195966330343444"
+  projectCreationChannelId: "1516196374620799127"
+  roles:
+    viewer:
+      roleId: "1519415640723558421"
+      name: "directory-viewer"
+    contributor:
+      roleId: "1519415642996998224"
+      name: "directory-contributor"
+    maintainer:
+      roleId: "1519415644729380915"
+      name: "directory-maintainer"
+
+authorization:
+  allowViewerQuestions: true
+  allowContributorsToClaimTasks: true
+  requireMaintainerForPlanApproval: true
+  requireMaintainerForDocsAndMemory: true
+  requireOwnerForInvites: false
+  requireOwnerForRepoCreation: true
+  requireOwnerForArchiveDelete: true
+  requireGlobalOwnerForGatewayConfig: true
+
+publishing:
+  githubPages: true
+  githubPagesStatus: "pending"
+  githubPagesUrl: "https://garrin-project-labs.github.io/project-directory/"
+  githubPagesSource: "main:/docs"
+  publicDemos: true
+
+starter:
+  preset: "empty"
+
+workflow:
+  taskThreads: automatic
+  taskCommandStyle: natural_language
+  friendlyTaskName: quest
+  requireMention: true
+  jamMode: temporary_ambient
+  branchNaming: "task/<id>-<slug>"
+  requirePlanApproval: true
+  requireMaintainerForDocsAndMemory: true
+  allowBotMergeWithMaintainerApproval: true
+  githubIssues: false
+
+audit:
+  level: medium
+  path: ".project/audit/events.jsonl"
+  includePrLinks: true
+  includeDiscordThreadLinks: true
