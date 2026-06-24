@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""Capture real GitHub Pages screenshots for Project Directory thumbnails."""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+OUTPUT_DIR = Path("docs/assets/thumbnails")
+VIEWPORT = "1280,720"
+WAIT_MS = "3000"
+
+
+def run(command: list[str]) -> None:
+    print("+ " + " ".join(command))
+    subprocess.run(command, check=True)
+
+
+def main() -> int:
+    manifest = Path("docs/projects.json")
+    if not manifest.exists():
+        run(["scripts/generate-project-directory.py"])
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    projects = payload.get("projects", [])
+    if not projects:
+        print("error: no projects found in docs/projects.json", file=sys.stderr)
+        return 2
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    for project in projects:
+        project_id = project["id"]
+        url = project.get("pagesUrl")
+        if not url:
+            print(f"skip {project_id}: no pagesUrl")
+            continue
+        output = OUTPUT_DIR / f"{project_id}.png"
+        run([
+            "npx",
+            "-y",
+            "playwright@latest",
+            "screenshot",
+            "--browser=chromium",
+            f"--viewport-size={VIEWPORT}",
+            f"--wait-for-timeout={WAIT_MS}",
+            url,
+            str(output),
+        ])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
