@@ -134,6 +134,20 @@ def load_directory_override(workspace_path: Path, project_id: str) -> dict[str, 
     return directory
 
 
+def unchanged_generated_at(output: Path, payload: dict[str, Any]) -> str | None:
+    if not output.exists():
+        return None
+    try:
+        existing = json.loads(output.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    comparable_existing = {key: value for key, value in existing.items() if key != "generatedAt"}
+    comparable_new = {key: value for key, value in payload.items() if key != "generatedAt"}
+    if comparable_existing == comparable_new:
+        return clean_text(existing.get("generatedAt")) or None
+    return None
+
+
 def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
     projects: list[dict[str, Any]] = []
     for policy_path in sorted(Path("/").glob(workspace_glob.lstrip("/") + "/.project/policy.yaml")):
@@ -221,6 +235,9 @@ def main() -> int:
         "projects": projects,
     }
     output = Path(args.output)
+    preserved_generated_at = unchanged_generated_at(output, payload)
+    if preserved_generated_at:
+        payload["generatedAt"] = preserved_generated_at
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {output} with {len(projects)} project(s)")

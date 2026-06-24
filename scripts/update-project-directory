@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Regenerate the Project Directory manifest and optionally prepare a git update.
+
+This is the lightweight Phase 3 automation hook. It keeps the public site static,
+uses the privacy-first generator, validates the output, and can create/push a
+reviewable branch when changes are found.
+"""
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+
+def run(command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    print("+ " + " ".join(command))
+    return subprocess.run(command, check=check, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+
+def print_output(result: subprocess.CompletedProcess[str]) -> None:
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+
+
+def has_changes(paths: list[str]) -> bool:
+    result = run(["git", "status", "--porcelain", "--", *paths])
+    return bool(result.stdout.strip())
+
+
+def current_branch() -> str:
+    result = run(["git", "branch", "--show-current"])
+    return result.stdout.strip()
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Regenerate Project Directory and optionally prepare a PR branch")
+    parser.add_argument("--workspace-glob", default="/home/garrin/.openclaw/workspace-*", help="Workspace glob passed to the generator")
+    parser.add_argument("--output", default="docs/projects.json", help="Manifest path to regenerate")
+    parser.add_argument("--generator", default="scripts/generate-project-directory.py", help="Generator script path")
+    parser.add_argument("--commit", action="store_true", help="Commit manifest changes when present")
+    parser.add_argument("--branch", default="task/update-project-directory", help="Branch to create/switch to when committing")
+    parser.add_argument("--push", action="store_true", help="Push the commit branch after committing")
+    parser.add_argument("--base", default="main", help="Base branch to update from before committing")
+    args = parser.parse_args()
+
+    repo = Path.cwd()
+    generator = repo / args.generator
+    output = repo / args.output
+    if not generator.exists():
+        print(f"error: generator not found: {generator}", file=sys.stderr)
+        return 2
+
+    if args.commit:
+        status = run(["git", "status", "--porcelain"])
+        dirty = [line for line in status.stdout.splitlines() if not line.endswith(args.output)]
+        if dirty:
+            print("error: refusing to commit with unrelated working tree changes:", file=sys.stderr)
+            for line in dirty:
+                print(f"  {line}", file=sys.stderr)
+            return 2
+        run(["git", "fetch", "origin", args.base])
+        existing = run(["git", "rev-parse", "--verify", args.branch], check=False)
+        if existing.returncode == 0:
+            print_output(run(["git", "switch", args.branch]))
+        else:
+            print_output(run(["git", "switch", "-c", args.branch, f"origin/{args.base}"]))
+
+    print_output(run([str(generator), "--workspace-glob", args.workspace_glob, "--output", args.output]))
+    print_output(run([sys.executable, "-m", "json.tool", args.output]))
+
+    if not has_changes([args.output]):
+        print(f"No directory changes found in {args.output}.")
+        return 0
+
+    print(f"Directory manifest changed: {args.output}")
+    if not args.commit:
+        print("Run with --commit to create a reviewable git commit.")
+        return 0
+
+    run(["git", "add", args.output])
+    print_output(run(["git", "commit", "-m", "Update project directory manifest"]))
+
+    branch = current_branch()
+    if args.push:
+        print_output(run(["git", "push", "-u", "origin", branch]))
+        print(f"Pushed {branch}. Open a PR against {args.base} if review is needed.")
+    else:
+        print(f"Committed on {branch}. Run `git push -u origin {branch}` to publish it.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
