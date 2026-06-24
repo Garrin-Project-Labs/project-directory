@@ -1,0 +1,7 @@
+directory:
+  listed: true
+  title: "Project Directory"
+  description: "Central landing page for public Project Factory projects."
+  tags: [directory, github-pages]
+  status: "live"
+  sortOrder: 999

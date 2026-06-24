@@ -13,6 +13,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 DEFAULT_WORKSPACE_GLOB = "/home/garrin/.openclaw/workspace-*"
 
@@ -23,6 +24,11 @@ def parse_scalar(raw: str) -> Any:
         return ""
     if raw[0:1] in ('"', "'") and raw[-1:] == raw[0]:
         return raw[1:-1]
+    if raw.startswith("[") and raw.endswith("]"):
+        items = raw[1:-1].strip()
+        if not items:
+            return []
+        return [parse_scalar(item.strip()) for item in items.split(",")]
     if raw == "true":
         return True
     if raw == "false":
@@ -67,6 +73,58 @@ def slug_to_description(project_id: str, name: str) -> str:
     return "Public Project Factory workspace."
 
 
+def clean_text(value: Any, fallback: str = "") -> str:
+    return str(value if value is not None else fallback).strip()
+
+
+def validate_description(description: str, project_id: str) -> str:
+    description = " ".join(description.split())
+    if len(description) > 180:
+        raise ValueError(f"directory description for {project_id} is too long ({len(description)} > 180 chars)")
+    return description
+
+
+def validate_tags(tags: Any, project_id: str) -> list[str]:
+    if tags in (None, ""):
+        return []
+    if not isinstance(tags, list):
+        raise ValueError(f"directory tags for {project_id} must be a YAML inline list")
+    cleaned: list[str] = []
+    for tag in tags:
+        text = clean_text(tag).lower()
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,30}", text):
+            raise ValueError(f"invalid directory tag for {project_id}: {tag!r}")
+        if text not in cleaned:
+            cleaned.append(text)
+    return cleaned
+
+
+def validate_thumbnail(thumbnail: str, project_id: str) -> str:
+    if not thumbnail:
+        return ""
+    parsed = urlparse(thumbnail)
+    if parsed.scheme:
+        if parsed.scheme != "https" or not parsed.netloc:
+            raise ValueError(f"directory thumbnail for {project_id} must be a local path or https URL")
+        return thumbnail
+    if thumbnail.startswith(("/", "../")) or "/../" in thumbnail or thumbnail == "..":
+        raise ValueError(f"directory thumbnail for {project_id} must stay inside the project site")
+    if not thumbnail.startswith(("docs/", "assets/")):
+        raise ValueError(f"directory thumbnail for {project_id} must be under docs/ or assets/")
+    return thumbnail
+
+
+def load_directory_override(workspace_path: Path, project_id: str) -> dict[str, Any]:
+    override_path = workspace_path / ".project" / "directory.yaml"
+    if not override_path.exists():
+        return {}
+    data = parse_simple_yaml(override_path)
+    directory = data.get("directory", {})
+    if not isinstance(directory, dict):
+        raise ValueError(f"directory override for {project_id} must contain a directory mapping")
+    return directory
+
+
 def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
     projects: list[dict[str, Any]] = []
     for policy_path in sorted(Path("/").glob(workspace_glob.lstrip("/") + "/.project/policy.yaml")):
@@ -78,33 +136,59 @@ def load_projects(workspace_glob: str) -> list[dict[str, Any]]:
         project = policy.get("project", {})
         discord = policy.get("discord", {})
         publishing = policy.get("publishing", {})
-        project_id = str(project.get("id") or policy_path.parents[1].name.removeprefix("workspace-")).strip()
-        name = str(project.get("name") or project_id.replace("-", " ").title()).strip()
-        visibility = str(discord.get("visibility") or "private").strip().lower()
+        project_id = clean_text(project.get("id") or policy_path.parents[1].name.removeprefix("workspace-"))
+        name = clean_text(project.get("name") or project_id.replace("-", " ").title())
+        visibility = clean_text(discord.get("visibility") or "private").lower()
         pages_enabled = publishing.get("githubPages") is True
         public_demo = publishing.get("publicDemos") is True
-        pages_url = str(publishing.get("githubPagesUrl") or "").strip()
+        pages_url = clean_text(publishing.get("githubPagesUrl"))
 
+        try:
+            override = load_directory_override(policy_path.parents[1], project_id)
+        except Exception as exc:
+            print(f"warning: skipped {policy_path.parents[1]} directory override: {exc}")
+            continue
+
+        if override.get("listed") is False:
+            continue
         if visibility != "public":
             continue
         if project_id != "directory" and not (pages_enabled and public_demo and pages_url):
             # Be conservative: public-but-not-published projects can opt in later.
             continue
 
-        repo = str(project.get("repo") or "").strip()
+        title = clean_text(override.get("title"), name)
+        description = validate_description(
+            clean_text(override.get("description"), slug_to_description(project_id, title)),
+            project_id,
+        )
+        thumbnail = validate_thumbnail(clean_text(override.get("thumbnail")), project_id)
+        tags = validate_tags(override.get("tags"), project_id)
+        status = clean_text(override.get("status"), "live" if pages_url else "pending").lower()
+        sort_order = override.get("sortOrder", 1000)
+        try:
+            sort_order = int(sort_order)
+        except (TypeError, ValueError):
+            raise ValueError(f"directory sortOrder for {project_id} must be an integer")
+
+        repo = clean_text(project.get("repo"))
         entry = {
             "id": project_id,
-            "title": name,
-            "description": slug_to_description(project_id, name),
+            "title": title,
+            "description": description,
             "repo": f"https://github.com/{repo}" if repo else "",
             "pagesUrl": pages_url,
-            "channelId": str(discord.get("channelId") or ""),
+            "channelId": clean_text(discord.get("channelId")),
             "visibility": visibility,
-            "pagesStatus": str(publishing.get("githubPagesStatus") or "unknown"),
-            "sortKey": name.lower(),
+            "pagesStatus": clean_text(publishing.get("githubPagesStatus"), "unknown"),
+            "status": status,
+            "thumbnail": thumbnail,
+            "tags": tags,
+            "sortOrder": sort_order,
+            "sortKey": title.lower(),
         }
         projects.append(entry)
-    projects.sort(key=lambda item: (item["id"] == "directory", item["sortKey"], item["id"]))
+    projects.sort(key=lambda item: (item["sortOrder"], item["id"] == "directory", item["sortKey"], item["id"]))
     return projects
 
 

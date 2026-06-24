@@ -14,6 +14,7 @@
       --muted: #aeb8c8;
       --accent: #7dd3fc;
       --accent-2: #c084fc;
+      --chip: rgba(125,211,252,.14);
     }
     * { box-sizing: border-box; }
     body {
@@ -55,8 +56,19 @@
       background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
       box-shadow: 0 20px 60px rgba(0,0,0,.24);
     }
+    .thumb {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--panel-border);
+    }
     .card h2 { margin: 0 0 10px; font-size: 1.25rem; }
     .card p { color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .chip { color: var(--accent); background: var(--chip); border: 1px solid rgba(125,211,252,.18); border-radius: 999px; padding: 4px 9px; font-size: .78rem; font-weight: 700; }
     .meta { color: var(--muted); font-size: .86rem; margin-top: auto; }
     .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
     a.button {
@@ -98,19 +110,26 @@
 
     function render() {
       const term = search.value.trim().toLowerCase();
-      const visible = projects.filter(project => [project.title, project.description, project.id].join(' ').toLowerCase().includes(term));
+      const visible = projects.filter(project => [project.title, project.description, project.id, ...(project.tags || [])].join(' ').toLowerCase().includes(term));
       count.textContent = `${visible.length} public project${visible.length === 1 ? '' : 's'}`;
       grid.innerHTML = visible.length ? visible.map(project => `
         <article class="card">
+          ${project.thumbnail ? `<img class="thumb" src="${encodeURI(publicAssetPath(project.thumbnail))}" alt="" loading="lazy" />` : ''}
           <h2>${escapeHtml(project.title)}</h2>
           <p>${escapeHtml(project.description || 'Public Project Factory workspace.')}</p>
-          <div class="meta">${escapeHtml(project.id)} · Pages ${escapeHtml(project.pagesStatus || 'unknown')}</div>
+          ${project.tags?.length ? `<div class="chips">${project.tags.map(tag => `<span class="chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+          <div class="meta">${escapeHtml(project.id)} · ${escapeHtml(project.status || 'live')} · Pages ${escapeHtml(project.pagesStatus || 'unknown')}</div>
           <div class="links">
             ${project.pagesUrl ? `<a class="button" href="${encodeURI(project.pagesUrl)}">Open site</a>` : ''}
             ${project.repo ? `<a class="button secondary" href="${encodeURI(project.repo)}">GitHub</a>` : ''}
           </div>
         </article>
       `).join('') : '<div class="empty">No matching public projects yet.</div>';
+    }
+
+    function publicAssetPath(value) {
+      const path = String(value ?? '');
+      return path.startsWith('docs/') ? path.slice(5) : path;
     }
 
     function escapeHtml(value) {
