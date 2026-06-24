@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-06-24T19:01:24+00:00",
+  "source": "Project Factory policy.yaml files",
+  "privacy": "Only public projects with public GitHub Pages demos are listed.",
+  "projects": [
+    {
+      "id": "space-2d-mmo",
+      "title": "2D MMO",
+      "description": "Project workspace for 2D MMO.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-space-2d-mmo",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-space-2d-mmo/",
+      "channelId": "1519142915262120058",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "2d mmo"
+    },
+    {
+      "id": "poly-art-assets",
+      "title": "3D Poly Art Assets",
+      "description": "Project workspace for 3D Poly Art Assets.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-3d-poly-art-assets",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-3d-poly-art-assets/",
+      "channelId": "1516987814745473024",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "3d poly art assets"
+    },
+    {
+      "id": "tutorial-biohazardous",
+      "title": "Biohazardous Dodge the Meteors",
+      "description": "Project workspace for Biohazardous Dodge the Meteors.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-tutorial-biohazardous",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-tutorial-biohazardous/",
+      "channelId": "1517726794147692596",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "biohazardous dodge the meteors"
+    },
+    {
+      "id": "for-the-queen",
+      "title": "For the queen",
+      "description": "Public Project Factory workspace.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-for-the-queen",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-for-the-queen/",
+      "channelId": "1519226939725054002",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "for the queen"
+    },
+    {
+      "id": "idle-rpg-phaser",
+      "title": "Idle RPG Phaser",
+      "description": "Public Project Factory workspace.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-idle-rpg-phaser",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-idle-rpg-phaser/",
+      "channelId": "1517780386091106395",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "idle rpg phaser"
+    },
+    {
+      "id": "tutorial-nubsterz",
+      "title": "Nubsterz Dodge the Meteors",
+      "description": "Project workspace for Nubsterz Dodge the Meteors.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-tutorial-nubsterz",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-tutorial-nubsterz/",
+      "channelId": "1517725825951203348",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "nubsterz dodge the meteors"
+    },
+    {
+      "id": "side-scroller-game",
+      "title": "Side Scroller Game",
+      "description": "Public Project Factory workspace.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-side-scroller-game",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-side-scroller-game/",
+      "channelId": "1517753801594114049",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "side scroller game"
+    },
+    {
+      "id": "directory",
+      "title": "Project Directory",
+      "description": "Central landing page for public Project Factory projects.",
+      "repo": "https://github.com/Garrin-Project-Labs/project-directory",
+      "pagesUrl": "https://garrin-project-labs.github.io/project-directory/",
+      "channelId": "1519415648382353569",
+      "visibility": "public",
+      "pagesStatus": "pending",
+      "sortKey": "project directory"
+    }
+  ]
+}

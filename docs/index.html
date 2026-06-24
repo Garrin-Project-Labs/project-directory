@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Directory</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.08);
+      --panel-border: rgba(255,255,255,.14);
+      --text: #f4f7fb;
+      --muted: #aeb8c8;
+      --accent: #7dd3fc;
+      --accent-2: #c084fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(125,211,252,.26), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(192,132,252,.18), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+    }
+    main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 72px; }
+    header { margin-bottom: 32px; }
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { font-size: clamp(2.25rem, 7vw, 5.75rem); line-height: .92; margin: 12px 0 18px; max-width: 860px; }
+    .lede { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.3rem); max-width: 760px; line-height: 1.55; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0; }
+    input {
+      flex: 1 1 260px;
+      border: 1px solid var(--panel-border);
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 13px 18px;
+      font: inherit;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(125,211,252,.14); }
+    .count { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .card {
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+      padding: 20px;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
+      box-shadow: 0 20px 60px rgba(0,0,0,.24);
+    }
+    .card h2 { margin: 0 0 10px; font-size: 1.25rem; }
+    .card p { color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
+    .meta { color: var(--muted); font-size: .86rem; margin-top: auto; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    a.button {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      text-decoration: none;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 10px 14px;
+    }
+    a.secondary { color: var(--text); background: rgba(255,255,255,.12); }
+    footer { color: var(--muted); margin-top: 34px; font-size: .9rem; }
+    .empty { color: var(--muted); border: 1px dashed var(--panel-border); border-radius: 20px; padding: 24px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Garrin Project Labs</div>
+      <h1>Project Directory</h1>
+      <p class="lede">A central landing page for public Project Factory projects. Each card links to the project’s GitHub Pages site when available, plus the backing repository for people who want to peek under the hood.</p>
+    </header>
+
+    <section class="toolbar" aria-label="Directory controls">
+      <input id="search" type="search" placeholder="Search projects…" autocomplete="off" />
+      <span class="count" id="count">Loading projects…</span>
+    </section>
+
+    <section class="grid" id="projects" aria-live="polite"></section>
+    <footer id="footer"></footer>
+  </main>
+
+  <script>
+    const grid = document.querySelector('#projects');
+    const count = document.querySelector('#count');
+    const search = document.querySelector('#search');
+    const footer = document.querySelector('#footer');
+    let projects = [];
+
+    function render() {
+      const term = search.value.trim().toLowerCase();
+      const visible = projects.filter(project => [project.title, project.description, project.id].join(' ').toLowerCase().includes(term));
+      count.textContent = `${visible.length} public project${visible.length === 1 ? '' : 's'}`;
+      grid.innerHTML = visible.length ? visible.map(project => `
+        <article class="card">
+          <h2>${escapeHtml(project.title)}</h2>
+          <p>${escapeHtml(project.description || 'Public Project Factory workspace.')}</p>
+          <div class="meta">${escapeHtml(project.id)} · Pages ${escapeHtml(project.pagesStatus || 'unknown')}</div>
+          <div class="links">
+            ${project.pagesUrl ? `<a class="button" href="${encodeURI(project.pagesUrl)}">Open site</a>` : ''}
+            ${project.repo ? `<a class="button secondary" href="${encodeURI(project.repo)}">GitHub</a>` : ''}
+          </div>
+        </article>
+      `).join('') : '<div class="empty">No matching public projects yet.</div>';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    }
+
+    fetch('projects.json', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(data => {
+        projects = data.projects || [];
+        const generated = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : 'recently';
+        footer.textContent = `Generated ${generated} · ${data.privacy || ''}`;
+        render();
+      })
+      .catch(error => {
+        count.textContent = 'Could not load projects';
+        grid.innerHTML = `<div class="empty">The project manifest could not be loaded: ${escapeHtml(error.message)}</div>`;
+      });
+
+    search.addEventListener('input', render);
+  </script>
+</body>
+</html>

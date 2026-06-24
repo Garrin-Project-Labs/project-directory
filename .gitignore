@@ -22,3 +22,12 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# OpenClaw local workspace/runtime files
+.openclaw/
+.project/audit/
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
