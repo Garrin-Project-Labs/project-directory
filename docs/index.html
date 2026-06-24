@@ -15,6 +15,7 @@
       --accent: #7dd3fc;
       --accent-2: #c084fc;
       --chip: rgba(125,211,252,.14);
+      --chip-active: rgba(125,211,252,.28);
     }
     * { box-sizing: border-box; }
     body {
@@ -32,7 +33,7 @@
     .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
     h1 { font-size: clamp(2.25rem, 7vw, 5.75rem); line-height: .92; margin: 12px 0 18px; max-width: 860px; }
     .lede { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.3rem); max-width: 760px; line-height: 1.55; }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0 14px; }
     input {
       flex: 1 1 260px;
       border: 1px solid var(--panel-border);
@@ -45,6 +46,36 @@
     }
     input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(125,211,252,.14); }
     .count { color: var(--muted); }
+    .filters { display: grid; gap: 12px; margin: 0 0 28px; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .filter-label { color: var(--muted); font-size: .85rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; margin-right: 2px; }
+    button.chip, .clear {
+      appearance: none;
+      cursor: pointer;
+      font: inherit;
+    }
+    .chip {
+      color: var(--accent);
+      background: var(--chip);
+      border: 1px solid rgba(125,211,252,.18);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: .82rem;
+      font-weight: 800;
+    }
+    .chip[data-active="true"] {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: transparent;
+    }
+    .clear {
+      color: var(--text);
+      background: rgba(255,255,255,.09);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 800;
+    }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
     .card {
       display: flex;
@@ -68,8 +99,9 @@
     .card h2 { margin: 0 0 10px; font-size: 1.25rem; }
     .card p { color: var(--muted); line-height: 1.5; margin: 0 0 18px; }
     .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
-    .chip { color: var(--accent); background: var(--chip); border: 1px solid rgba(125,211,252,.18); border-radius: 999px; padding: 4px 9px; font-size: .78rem; font-weight: 700; }
+    .card .chip { cursor: default; padding: 4px 9px; font-size: .78rem; }
     .meta { color: var(--muted); font-size: .86rem; margin-top: auto; }
+    .status { color: var(--accent); font-weight: 800; text-transform: capitalize; }
     .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
     a.button {
       color: #07111f;
@@ -97,6 +129,11 @@
       <span class="count" id="count">Loading projects…</span>
     </section>
 
+    <section class="filters" aria-label="Project filters">
+      <div class="filter-row" id="statusFilters"></div>
+      <div class="filter-row" id="tagFilters"></div>
+    </section>
+
     <section class="grid" id="projects" aria-live="polite"></section>
     <footer id="footer"></footer>
   </main>
@@ -106,25 +143,71 @@
     const count = document.querySelector('#count');
     const search = document.querySelector('#search');
     const footer = document.querySelector('#footer');
+    const statusFilters = document.querySelector('#statusFilters');
+    const tagFilters = document.querySelector('#tagFilters');
+    const state = { status: 'all', tag: 'all' };
     let projects = [];
 
     function render() {
       const term = search.value.trim().toLowerCase();
-      const visible = projects.filter(project => [project.title, project.description, project.id, ...(project.tags || [])].join(' ').toLowerCase().includes(term));
-      count.textContent = `${visible.length} public project${visible.length === 1 ? '' : 's'}`;
+      const visible = projects.filter(project => {
+        const searchable = [project.title, project.description, project.id, project.status, ...(project.tags || [])].join(' ').toLowerCase();
+        const matchesSearch = !term || searchable.includes(term);
+        const matchesStatus = state.status === 'all' || (project.status || 'live') === state.status;
+        const matchesTag = state.tag === 'all' || (project.tags || []).includes(state.tag);
+        return matchesSearch && matchesStatus && matchesTag;
+      });
+
+      count.textContent = summaryText(visible.length, term);
+      renderFilters();
       grid.innerHTML = visible.length ? visible.map(project => `
         <article class="card">
           ${project.thumbnail ? `<img class="thumb" src="${encodeURI(publicAssetPath(project.thumbnail))}" alt="" loading="lazy" />` : ''}
           <h2>${escapeHtml(project.title)}</h2>
           <p>${escapeHtml(project.description || 'Public Project Factory workspace.')}</p>
           ${project.tags?.length ? `<div class="chips">${project.tags.map(tag => `<span class="chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
-          <div class="meta">${escapeHtml(project.id)} · ${escapeHtml(project.status || 'live')} · Pages ${escapeHtml(project.pagesStatus || 'unknown')}</div>
+          <div class="meta">${escapeHtml(project.id)} · <span class="status">${escapeHtml(project.status || 'live')}</span> · Pages ${escapeHtml(project.pagesStatus || 'unknown')}</div>
           <div class="links">
             ${project.pagesUrl ? `<a class="button" href="${encodeURI(project.pagesUrl)}">Open site</a>` : ''}
             ${project.repo ? `<a class="button secondary" href="${encodeURI(project.repo)}">GitHub</a>` : ''}
           </div>
         </article>
-      `).join('') : '<div class="empty">No matching public projects yet.</div>';
+      `).join('') : `<div class="empty">No projects match ${escapeHtml(activeFilterText(term))}.</div>`;
+    }
+
+    function renderFilters() {
+      const statuses = ['all', ...unique(projects.map(project => project.status || 'live'))];
+      const tags = ['all', ...unique(projects.flatMap(project => project.tags || []))];
+      statusFilters.innerHTML = renderFilterGroup('Status', statuses, state.status, 'status');
+      tagFilters.innerHTML = renderFilterGroup('Tags', tags, state.tag, 'tag') + (hasActiveFilters() ? '<button class="clear" type="button" data-filter="clear">Clear filters</button>' : '');
+    }
+
+    function renderFilterGroup(label, values, active, filter) {
+      return `<span class="filter-label">${label}</span>${values.map(value => `<button class="chip" type="button" data-filter="${filter}" data-value="${escapeHtml(value)}" data-active="${value === active}">${escapeHtml(value)}</button>`).join('')}`;
+    }
+
+    function summaryText(total, term) {
+      const pieces = [];
+      if (term) pieces.push(`search “${term}”`);
+      if (state.status !== 'all') pieces.push(state.status);
+      if (state.tag !== 'all') pieces.push(`#${state.tag}`);
+      return `${total} public project${total === 1 ? '' : 's'}${pieces.length ? ` matching ${pieces.join(' + ')}` : ''}`;
+    }
+
+    function activeFilterText(term) {
+      const pieces = [];
+      if (term) pieces.push(`“${term}”`);
+      if (state.status !== 'all') pieces.push(state.status);
+      if (state.tag !== 'all') pieces.push(`#${state.tag}`);
+      return pieces.length ? pieces.join(' + ') : 'the current filters';
+    }
+
+    function hasActiveFilters() {
+      return state.status !== 'all' || state.tag !== 'all' || search.value.trim();
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
     }
 
     function publicAssetPath(value) {
@@ -135,6 +218,20 @@
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
     }
+
+    document.querySelector('.filters').addEventListener('click', event => {
+      const button = event.target.closest('button[data-filter]');
+      if (!button) return;
+      const filter = button.dataset.filter;
+      if (filter === 'clear') {
+        state.status = 'all';
+        state.tag = 'all';
+        search.value = '';
+      } else {
+        state[filter] = button.dataset.value;
+      }
+      render();
+    });
 
     fetch('projects.json', { cache: 'no-store' })
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
