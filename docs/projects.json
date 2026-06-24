@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T21:29:43+00:00",
+  "generatedAt": "2026-06-24T21:36:24+00:00",
   "source": "Project Factory policy.yaml files",
   "privacy": "Only public projects with public GitHub Pages demos are listed.",
   "projects": [
@@ -13,7 +13,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/directory.png",
       "tags": [
         "directory",
         "github-pages"
@@ -31,7 +31,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/space-2d-mmo.png",
       "tags": [
         "game",
         "mmo",
@@ -50,7 +50,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/poly-art-assets.png",
       "tags": [
         "assets",
         "art",
@@ -69,7 +69,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/tutorial-biohazardous.png",
       "tags": [
         "game",
         "tutorial"
@@ -87,7 +87,7 @@
       "visibility": "public",
       "pagesStatus": "live",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/bullet-hell-game.png",
       "tags": [
         "game",
         "bullet-hell"
@@ -105,7 +105,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/for-the-queen.png",
       "tags": [
         "game",
         "demo"
@@ -123,7 +123,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "docs/assets/production/town-hub-background.png",
+      "thumbnail": "docs/assets/thumbnails/idle-rpg-phaser.png",
       "tags": [
         "game",
         "rpg",
@@ -142,7 +142,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "docs/assets/nubsterz-cat.png",
+      "thumbnail": "docs/assets/thumbnails/tutorial-nubsterz.png",
       "tags": [
         "game",
         "tutorial"
@@ -160,7 +160,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "thumbnail": "",
+      "thumbnail": "docs/assets/thumbnails/side-scroller-game.png",
       "tags": [
         "game",
         "platformer"
