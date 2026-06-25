@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biohazardous Project Reviews</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.08);
+      --panel-border: rgba(255,255,255,.14);
+      --text: #f4f7fb;
+      --muted: #aeb8c8;
+      --accent: #7dd3fc;
+      --accent-2: #c084fc;
+      --chip: rgba(125,211,252,.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(125,211,252,.26), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(192,132,252,.18), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+    }
+    main { width: min(1000px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 72px; }
+    header { margin-bottom: 32px; }
+    nav { margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+    h1 { font-size: clamp(2.25rem, 7vw, 5rem); line-height: .94; margin: 12px 0 18px; max-width: 820px; }
+    .lede { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.25rem); max-width: 760px; line-height: 1.55; }
+    .reviews { display: grid; gap: 18px; }
+    .card {
+      display: grid;
+      grid-template-columns: minmax(0, 260px) 1fr;
+      gap: 20px;
+      padding: 20px;
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
+      box-shadow: 0 20px 60px rgba(0,0,0,.24);
+    }
+    .thumb {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--panel-border);
+    }
+    h2 { margin: 0 0 10px; font-size: 1.35rem; }
+    .summary { color: var(--text); font-size: 1.05rem; line-height: 1.45; margin: 0 0 12px; }
+    .thoughts { color: var(--muted); line-height: 1.58; margin: 0 0 14px; }
+    .meta { color: var(--muted); font-size: .9rem; margin-bottom: 12px; }
+    .rating { color: #fde68a; font-weight: 900; }
+    .callout { color: var(--muted); border-left: 3px solid var(--accent); padding-left: 12px; margin: 10px 0; }
+    .links, .top-links { display: flex; flex-wrap: wrap; gap: 10px; }
+    a.button {
+      color: #07111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      text-decoration: none;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 10px 14px;
+      display: inline-block;
+    }
+    a.secondary { color: var(--text); background: rgba(255,255,255,.12); }
+    footer { color: var(--muted); margin-top: 34px; font-size: .9rem; }
+    .empty { color: var(--muted); border: 1px dashed var(--panel-border); border-radius: 20px; padding: 24px; line-height: 1.55; }
+    @media (max-width: 720px) { .card { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <nav class="top-links" aria-label="Project Directory navigation">
+      <a class="button secondary" href="./">← Directory</a>
+    </nav>
+    <header>
+      <div class="eyebrow">Garrin Project Labs</div>
+      <h1>Biohazardous Project Reviews</h1>
+      <p class="lede">A curated review shelf for public Project Factory demos. Biohazardous can rate projects, write quick thoughts, and highlight what worked or what could be improved.</p>
+    </header>
+    <section class="reviews" id="reviews" aria-live="polite">
+      <div class="empty">Loading reviews…</div>
+    </section>
+    <footer id="footer"></footer>
+  </main>
+
+  <script>
+    const reviewsEl = document.querySelector('#reviews');
+    const footer = document.querySelector('#footer');
+
+    function renderReview(review) {
+      return `
+        <article class="card">
+          ${review.projectThumbnail ? `<img class="thumb" src="${encodeURI(publicAssetPath(review.projectThumbnail))}" alt="" loading="lazy" />` : ''}
+          <div>
+            <h2>${escapeHtml(review.projectTitle)}</h2>
+            <div class="meta">Reviewed by ${escapeHtml(review.reviewer?.displayName || review.reviewer?.name || 'Biohazardous')} · ${escapeHtml(formatDate(review.reviewedAt))} · <span class="rating">${stars(review.rating)} ${escapeHtml(review.rating)}/5</span></div>
+            <p class="summary">${escapeHtml(review.summary)}</p>
+            <p class="thoughts">${escapeHtml(review.thoughts)}</p>
+            ${review.favorite ? `<p class="callout"><strong>Favorite bit:</strong> ${escapeHtml(review.favorite)}</p>` : ''}
+            ${review.suggestion ? `<p class="callout"><strong>Suggestion:</strong> ${escapeHtml(review.suggestion)}</p>` : ''}
+            <div class="links">
+              ${review.projectUrl ? `<a class="button" href="${encodeURI(review.projectUrl)}">Open project</a>` : ''}
+              ${review.projectRepo ? `<a class="button secondary" href="${encodeURI(review.projectRepo)}">GitHub</a>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function publicAssetPath(value) {
+      const path = String(value ?? '');
+      return path.startsWith('docs/') ? path.slice(5) : path;
+    }
+
+    function stars(rating) {
+      const value = Math.max(0, Math.min(5, Number(rating) || 0));
+      const full = Math.floor(value);
+      const half = value - full >= 0.5;
+      return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(Math.max(0, 5 - full - (half ? 1 : 0)));
+    }
+
+    function formatDate(value) {
+      if (!value) return 'unknown date';
+      const date = new Date(value);
+      if (Number.isNaN(date.valueOf())) return String(value).slice(0, 10);
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    }
+
+    fetch('reviews.json', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(data => {
+        const reviews = data.reviews || [];
+        reviewsEl.innerHTML = reviews.length
+          ? reviews.map(renderReview).join('')
+          : '<div class="empty">No reviews published yet. When Biohazardous sends a project rating and write-up, it will show up here.</div>';
+        const generated = data.generatedAt ? new Date(data.generatedAt).toLocaleString() : 'recently';
+        footer.textContent = `${reviews.length} review${reviews.length === 1 ? '' : 's'} · Generated ${generated}`;
+      })
+      .catch(error => {
+        reviewsEl.innerHTML = `<div class="empty">The reviews feed could not be loaded: ${escapeHtml(error.message)}</div>`;
+      });
+  </script>
+</body>
+</html>

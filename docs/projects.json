@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T22:33:34+00:00",
+  "generatedAt": "2026-06-25T01:04:31+00:00",
   "source": "Project Factory policy.yaml files",
   "privacy": "Only public projects with public GitHub Pages demos are listed.",
   "projects": [
@@ -13,7 +13,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "updatedAt": "2026-06-24T21:57:48Z",
+      "updatedAt": "2026-06-24T22:33:42Z",
       "thumbnail": "docs/assets/thumbnails/directory.png",
       "tags": [
         "directory",
@@ -72,7 +72,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "updatedAt": "2026-06-24T21:36:42Z",
+      "updatedAt": "2026-06-25T00:35:15Z",
       "thumbnail": "docs/assets/thumbnails/tutorial-biohazardous.png",
       "tags": [
         "game",
@@ -168,7 +168,7 @@
       "visibility": "public",
       "pagesStatus": "pending",
       "status": "live",
-      "updatedAt": "2026-06-24T21:36:38Z",
+      "updatedAt": "2026-06-25T00:33:43Z",
       "thumbnail": "docs/assets/thumbnails/side-scroller-game.png",
       "tags": [
         "game",

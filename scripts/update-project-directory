@@ -38,6 +38,7 @@ def main() -> int:
     parser.add_argument("--workspace-glob", default="/home/garrin/.openclaw/workspace-*", help="Workspace glob passed to the generator")
     parser.add_argument("--output", default="docs/projects.json", help="Manifest path to regenerate")
     parser.add_argument("--generator", default="scripts/generate-project-directory.py", help="Generator script path")
+    parser.add_argument("--reviews-generator", default="scripts/generate-project-reviews.py", help="Reviews generator script path")
     parser.add_argument("--commit", action="store_true", help="Commit manifest changes when present")
     parser.add_argument("--branch", default="task/update-project-directory", help="Branch to create/switch to when committing")
     parser.add_argument("--push", action="store_true", help="Push the commit branch after committing")
@@ -68,9 +69,14 @@ def main() -> int:
 
     print_output(run([str(generator), "--workspace-glob", args.workspace_glob, "--output", args.output]))
     print_output(run([sys.executable, "-m", "json.tool", args.output]))
+    reviews_generator = repo / args.reviews_generator
+    if reviews_generator.exists():
+        print_output(run([str(reviews_generator)]))
+        print_output(run([sys.executable, "-m", "json.tool", "docs/reviews.json"]))
 
-    if not has_changes([args.output]):
-        print(f"No directory changes found in {args.output}.")
+    tracked_outputs = [args.output, "docs/reviews.json"]
+    if not has_changes(tracked_outputs):
+        print(f"No directory changes found in {', '.join(tracked_outputs)}.")
         return 0
 
     print(f"Directory manifest changed: {args.output}")
@@ -78,7 +84,7 @@ def main() -> int:
         print("Run with --commit to create a reviewable git commit.")
         return 0
 
-    run(["git", "add", args.output])
+    run(["git", "add", *tracked_outputs])
     print_output(run(["git", "commit", "-m", "Update project directory manifest"]))
 
     branch = current_branch()

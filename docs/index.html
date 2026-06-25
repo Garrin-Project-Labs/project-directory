@@ -30,6 +30,7 @@
     }
     main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 72px; }
     header { margin-bottom: 32px; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
     .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
     h1 { font-size: clamp(2.25rem, 7vw, 5.75rem); line-height: .92; margin: 12px 0 18px; max-width: 860px; }
     .lede { color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.3rem); max-width: 760px; line-height: 1.55; }
@@ -118,6 +119,9 @@
 </head>
 <body>
   <main>
+    <nav aria-label="Project Directory navigation">
+      <a class="button secondary" href="reviews.html">Biohazardous reviews</a>
+    </nav>
     <header>
       <div class="eyebrow">Garrin Project Labs</div>
       <h1>Project Directory</h1>
